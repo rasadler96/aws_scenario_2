@@ -1,0 +1,227 @@
+{
+    "family": "ecs_pipeline",
+    "networkMode": "awsvpc",
+	"cpu": "8",
+    "memory": "32",
+    "containerDefinitions": [
+        {
+            "name": "set_up",
+            "image": "",
+            "essential": true,
+            "command": [
+                ""
+            ],
+            "environment": [
+                {
+                    "name": "",
+                    "value": ""
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "bwa_mem",
+            "image": "biocontainers/bwa:v0.7.17-3-deb_cv1",
+            "essential": true,
+            "command": [
+                "bwa mem -M -t 4 -R read_group .reference/hs37d5.fa OMGL_2005265_U035_S35_L001_R1_001.fastq.gz OMGL_2005265_U035_S35_L001_R2_001.fastq > OMGL_2005265_U035.sam 2>bwa.log"
+            ],
+            "environment": [
+                {
+                    "name": "read_group",
+                    "value": "@RG\\tID:OMGL_2005265_U033\\tPL:ILLUMINA\\tSM:OMGL_2005265_U033\\tLB:library\\tPU:platform_unit"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "set_up",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "sam_to_bam",
+            "image": "biocontainers/samtools:v1.9-4-deb_cv1",
+            "essential": true,
+            "command": [
+                "samtools view -bS OMGL_2005265_U035.sam > OMGL_2005265_U035.bam 2>sam2bam.log"
+            ],
+            "environment": [
+                {
+                    "name": "ID",
+                    "value": "OMGL_2005265_U035"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "bwa_mem",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "sort_sam",
+            "image": "broadinstitute/gatk:latest",
+            "essential": true,
+			"workingDirectory": "/data",
+            "command": [
+                "gatk --java-options "-Xmx2g -Djava.io.tmpdir=tmp" SortSam -I OMGL_2005265_U035.bam -O OMGL_2005265_U035sortedbam.bam -SO coordinate --TMP_DIR /tmp &>picard_sort.log"
+            ],
+            "environment": [
+                {
+                    "name": "ID",
+                    "value": "OMGL_2005265_U035"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "sam_to_bam",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "index_bam",
+            "image": "biocontainers/samtools:v1.9-4-deb_cv1",
+            "essential": true,
+            "command": [
+                "samtools index OMGL_2005265_U035sortedbam.bam &>index.log"
+            ],
+            "environment": [
+                {
+                    "name": "ID",
+                    "value": "OMGL_2005265_U035"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "sort_sam",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "mark_duplicates",
+            "image": "broadinstitute/gatk:latest",
+            "essential": true,
+			"workingDirectory": "/data",
+            "command": [
+                "gatk --java-options "-Xmx8g -Djava.io.tmpdir=tmp" MarkDuplicates -I OMGL_2005265_U035sortedbam.bam -O OMGL_2005265_U035dedupbam.bam --METRICS_FILE picard_metrics.log --TMP_DIR /tmp &>picard_dup.log"
+            ],
+            "environment": [
+                {
+                    "name": "ID",
+                    "value": "OMGL_2005265_U035"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "index_bam",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "index_dedup",
+            "image": "biocontainers/samtools:v1.9-4-deb_cv1",
+            "essential": true,
+            "command": [
+                "samtools index OMGL_2005265_U035dedupbam.bam"
+            ],
+            "environment": [
+                {
+                    "name": "ID",
+                    "value": "OMGL_2005265_U035"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "mark_duplicates",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+    "containerDefinitions": [
+        {
+            "name": "variant_calling",
+            "image": "broadinstitute/gatk:latest",
+            "essential": true,
+			"workingDirectory": "/data",
+            "command": [
+                "gatk HaplotypeCaller -A Coverage -R /data/reference/hs37d5.fa -I OMGL_2005265_U035dedupbam.bam -L FH.bed -O OMGL_2005265_U035.vcf &>haplotype.log"
+            ],
+            "environment": [
+                {
+                    "name": "ID",
+                    "value": "OMGL_2005265_U035"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "/home/ubuntu/aws-ecs-pipeline",
+                    "containerPath": "/data",
+                }
+            ],
+            "dependsOn": [
+                {
+                    "containerName": "index_dedup",
+                    "condition": "SUCCESS"
+                }
+            ],
+        }
+    ],
+}
