@@ -1,0 +1,4 @@
+# preventing config file and environment from being uploaded to github 
+*.yml
+/ecs_env
+*.pem
