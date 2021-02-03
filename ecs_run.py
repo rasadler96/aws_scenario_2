@@ -126,5 +126,3 @@ instance_id = create_instances(**instance_details)
 
 
 
-
-
