@@ -140,15 +140,6 @@ def add_role_to_instance_profile(instance_profile_name, role_name):
 	else:
 		print('Role added to instance profile')
 
-# Registering the task definitions for each step in the pipeline. 
-def register_task_definition(**kwargs):
-	try:
-		response = ecs_client.register_task_definition(**kwargs)
-	except botocore.exceptions.ClientError as e:
-		print(e)
-	else:
-		print(response)
-
 def add_to_config(keypairName, sgID, role1ARN, role2ARN, role3ARN, role4ARN):
 	data = {'ecs_information': {'keypair_name': str(keypairName), 'security_group_ID': str(sgID), 'ecsInstanceRole_arn' : str(role1ARN), 'ecsTaskExecutionRole_arn' : str(role2ARN), 'ecsS3InputBucketAccess_arn' : str(role3ARN), 'ecsS3OutputBucketAccess_arn' : str(role4ARN)}}
 	config_file = open('ecs_config.yml', 'w')
