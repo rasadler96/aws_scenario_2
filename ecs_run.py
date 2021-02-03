@@ -29,6 +29,15 @@ def create_cluster(**kwargs):
         cluster_name = response['cluster']['clusterName']
         return cluster_name
 
+def add_waiter(waiter_type, **kwargs):
+    try:
+        waiter = ec2_client.get_waiter(waiter_type)
+        waiter.wait(**kwargs)
+    except botocore.exceptions.ClientError as e: 
+        print(e)
+    else:
+        print(waiter_type)
+
 # Loading in Amazon credentials
 amazon_config = yaml.safe_load(open("config.yml"))
 
@@ -117,7 +126,16 @@ instance_details = {'BlockDeviceMappings' : [
 
 instance_id = create_instances(**instance_details)
 
+# Waiter for initilisation of the instance - to give time for the instance to register with the cluster. 
+waiter_initilised = {
+    'InstanceIds' : [instance_id],
+    'WaiterConfig' : {
+        'Delay': 123,
+        'MaxAttempts': 123
+    }
+}
 
+add_waiter('instance_status_ok', **waiter_initilised)
 
 
 
