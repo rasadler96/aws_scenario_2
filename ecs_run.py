@@ -27,6 +27,7 @@ def create_cluster(**kwargs):
         print(e)
     else: 
         cluster_name = response['cluster']['clusterName']
+        print('%s cluster created'%cluster_name)
         return cluster_name
 
 def create_instances(**kwargs):
@@ -90,6 +91,15 @@ def run_task(cluster_name, task_definition_arn):
         exit_code = describe_tasks['tasks'][0]['containers'][0]['exitCode']
         print('%s complete with exit code %s'%(task_arn, exit_code))
 
+def terminate_instance_cluster(instanceID):
+    try:
+        ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
+        response = ecs_client.delete_cluster(cluster=cluster_name)
+    except botocore.exceptions.ClientError as e:
+        print(e)
+    else:
+        print('Instance terminated and cluster deleted')
+
 # Loading in Amazon credentials
 amazon_config = yaml.safe_load(open("config.yml"))
 
@@ -119,6 +129,7 @@ session = boto3.Session(
 
 ecs_client = session.client('ecs')
 ec2_client = session.client('ec2')
+ec2_resource = session.resource('ec2')
 
 # Creating list of the JSON files needed to create a task for each pipeline step
 json_files = []
@@ -193,6 +204,7 @@ for step in pipeline_steps:
     run_task(cluster_name, step)
 
 
-
+# Terminate the instance and delete cluster as no longer required. 
+terminate_instance_cluster(instance_id, cluster_name)
 
 
