@@ -104,10 +104,6 @@ ecs_config = yaml.safe_load(open("ecs_config.yml"))
 
 ecs_details = ecs_config['ecs_information']
 
-ecsInstanceRole_arn = ecs_details['ecsInstanceRole_arn']
-ecsS3InputBucketAccess_arn = ecs_details['ecsS3InputBucketAccess_arn']
-ecsS3OutputBucketAccess_arn = ecs_details['ecsS3OutputBucketAccess_arn']
-ecsTaskExecutionRole_arn = ecs_details['ecsTaskExecutionRole_arn']
 keypair_name = ecs_details['keypair_name']
 security_group_ID = ecs_details['security_group_ID']
 
@@ -192,6 +188,7 @@ add_waiter('instance_status_ok', **waiter_initilised)
 # Creating a list of the task arns in pipeline order
 pipeline_steps = [task_def_arn_dict['s3_pull'], task_def_arn_dict['align_bwa_mem'], task_def_arn_dict['sam_to_bam'], task_def_arn_dict['sort_sam'], task_def_arn_dict['index_bam'], task_def_arn_dict['mark_duplicates'], task_def_arn_dict['index_dedup'], task_def_arn_dict['variant_caller'], task_def_arn_dict['push_to_s3']]
 
+# Running each pipeline task
 for step in pipeline_steps:
     run_task(cluster_name, step)
 
