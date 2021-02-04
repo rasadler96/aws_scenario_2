@@ -16,9 +16,9 @@ def register_task(**kwargs):
     except botocore.exceptions.ClientError as e:
         print(e)
     else: 
-        task_arn = response["taskDefinition"]["taskDefinitionArn"]
-        print('Task %s registered'%task_arn)
-        return task_arn
+        task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+        print('Task %s registered'%task_def_arn)
+        return task_def_arn
 
 def create_cluster(**kwargs):
     try:
@@ -128,16 +128,16 @@ ec2_client = session.client('ec2')
 json_files = []
 json_files.extend(glob.glob('./JSON/*.json'))
 
-task_arn_dict = {}
+task_def_arn_dict = {}
 
 for file in json_files:
     user_data = get_task_JSON(file)
     base=os.path.basename(file)
     process = os.path.splitext(base)[0]
     # Register task
-    task_arn = register_task(**user_data)
+    task_def_arn = register_task(**user_data)
     # Add name of task and the ARN to a dictionary
-    task_arn_dict.update( {process : task_arn} ) 
+    task_def_arn_dict.update( {process : task_def_arn} ) 
 
 # Defining cluster details then creating cluster
 cluster_details = {
