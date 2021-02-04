@@ -21,6 +21,14 @@ def register_task(**kwargs):
         print('Task %s registered'%task_def_arn)
         return task_def_arn, log_group
 
+def create_log_group(log_group):
+    try:
+        response = log_client.create_log_group(logGroupName=log_group)
+    except botocore.exceptions.ClientError as e:
+        print(e)
+    else:
+        print('Log group created: %s'%log_group)
+
 def create_cluster(**kwargs):
     try:
         response = ecs_client.create_cluster(**kwargs)
@@ -28,7 +36,7 @@ def create_cluster(**kwargs):
         print(e)
     else: 
         cluster_name = response['cluster']['clusterName']
-        print('%s cluster created'%cluster_name)
+        print('Cluster (%s) created'%cluster_name)
         return cluster_name
 
 def create_instances(**kwargs):
@@ -131,6 +139,7 @@ session = boto3.Session(
 ecs_client = session.client('ecs')
 ec2_client = session.client('ec2')
 ec2_resource = session.resource('ec2')
+log_client = session.client('logs')
 
 # Creating list of the JSON files needed to create a task for each pipeline step
 json_files = []
@@ -146,6 +155,8 @@ for file in json_files:
     task_def_arn, log_group = register_task(**user_data)
     # Add name of task and the ARN to a dictionary
     task_def_arn_dict.update( {process : task_def_arn} ) 
+    # Create cloudwatch log group for task
+    create_log_group(log_group)
 
 # Defining cluster details then creating cluster
 cluster_details = {
