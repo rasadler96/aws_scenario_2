@@ -130,8 +130,8 @@ instance_id = create_instances(**instance_details)
 waiter_initilised = {
     'InstanceIds' : [instance_id],
     'WaiterConfig' : {
-        'Delay': 123,
-        'MaxAttempts': 123
+        'Delay': 60,
+        'MaxAttempts': 100
     }
 }
 
