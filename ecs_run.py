@@ -17,8 +17,9 @@ def register_task(**kwargs):
         print(e)
     else: 
         task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+        log_group = '/ecs/' + response["taskDefinition"]["family"]
         print('Task %s registered'%task_def_arn)
-        return task_def_arn
+        return task_def_arn, log_group
 
 def create_cluster(**kwargs):
     try:
@@ -142,7 +143,7 @@ for file in json_files:
     base=os.path.basename(file)
     process = os.path.splitext(base)[0]
     # Register task
-    task_def_arn = register_task(**user_data)
+    task_def_arn, log_group = register_task(**user_data)
     # Add name of task and the ARN to a dictionary
     task_def_arn_dict.update( {process : task_def_arn} ) 
 
