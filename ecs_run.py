@@ -29,6 +29,16 @@ def create_cluster(**kwargs):
         cluster_name = response['cluster']['clusterName']
         return cluster_name
 
+def create_instances(**kwargs):
+    try:
+        response = ec2_client.run_instances(**kwargs)
+    except botocore.exceptions.ClientError as e: 
+        print(e)
+    else:
+        instance_ID = response['Instances'][0]['InstanceId']
+        print('Instance created (%s)'%instance_ID)
+        return instance_ID  
+
 def add_waiter(waiter_type, **kwargs):
     try:
         waiter = ec2_client.get_waiter(waiter_type)
@@ -37,6 +47,48 @@ def add_waiter(waiter_type, **kwargs):
         print(e)
     else:
         print(waiter_type)
+
+def run_task(cluster_name, task_definition_arn):
+    try:
+        response = ecs_client.run_task(
+            cluster = cluster_name,
+            count = 1,
+            launchType = 'EC2',
+            placementStrategy = [
+                {
+                    'type': 'random',
+                },
+            ],
+            referenceId= 'task_id',
+            taskDefinition= task_definition_arn)
+    except botocore.exceptions.ClientError as e:
+        print(e)
+    else:
+        # If task runs without error, pull the task_arn from the response
+        task_arn = response['tasks'][0]['containers'][0]['taskArn']
+        
+        # Wait for task to stop
+        waiter = ecs_client.get_waiter('tasks_stopped')
+        waiter.wait(
+            cluster=cluster_name,
+            tasks=[
+                task_arn,
+            ],
+            WaiterConfig={
+                'Delay': 60,
+                'MaxAttempts': 1000
+            }
+        )
+
+        # Describe the task to get the exit code - should be 0. 
+        describe_tasks = ecs_client.describe_tasks(
+            cluster=cluster_name,
+            tasks=[
+                task_arn,
+            ]
+        )
+        exit_code = describe_tasks['tasks'][0]['containers'][0]['exitCode']
+        print('%s complete with exit code %s'%(task_arn, exit_code))
 
 # Loading in Amazon credentials
 amazon_config = yaml.safe_load(open("config.yml"))
