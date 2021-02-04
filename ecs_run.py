@@ -189,8 +189,11 @@ waiter_initilised = {
 
 add_waiter('instance_status_ok', **waiter_initilised)
 
+# Creating a list of the task arns in pipeline order
+pipeline_steps = [task_def_arn_dict['s3_pull'], task_def_arn_dict['align_bwa_mem'], task_def_arn_dict['sam_to_bam'], task_def_arn_dict['sort_sam'], task_def_arn_dict['index_bam'], task_def_arn_dict['mark_duplicates'], task_def_arn_dict['index_dedup'], task_def_arn_dict['variant_caller'], task_def_arn_dict['push_to_s3']]
 
-
+for step in pipeline_steps:
+    run_task(cluster_name, step)
 
 
 
