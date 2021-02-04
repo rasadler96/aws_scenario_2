@@ -17,7 +17,7 @@ def register_task(**kwargs):
         print(e)
     else: 
         task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
-        log_group = '/ecs/' + response["taskDefinition"]["family"]
+        log_group = response["taskDefinition"]["containerDefinitions"][0]["logConfiguration"]["options"]["awslogs-group"]
         print('Task %s registered'%task_def_arn)
         return task_def_arn, log_group
 
@@ -100,7 +100,7 @@ def run_task(cluster_name, task_definition_arn):
         exit_code = describe_tasks['tasks'][0]['containers'][0]['exitCode']
         print('%s complete with exit code %s'%(task_arn, exit_code))
 
-def terminate_instance_cluster(instanceID):
+def terminate_instance_cluster(instanceID, cluster_name):
     try:
         ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
         response = ecs_client.delete_cluster(cluster=cluster_name)
@@ -201,7 +201,7 @@ instance_id = create_instances(**instance_details)
 waiter_initilised = {
     'InstanceIds' : [instance_id],
     'WaiterConfig' : {
-        'Delay': 60,
+        'Delay': 30,
         'MaxAttempts': 100
     }
 }
