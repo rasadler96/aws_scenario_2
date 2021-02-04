@@ -103,7 +103,21 @@ def run_task(cluster_name, task_definition_arn):
 def terminate_instance_cluster(instanceID, cluster_name):
     try:
         ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
-        response = ecs_client.delete_cluster(cluster=cluster_name)
+        
+        # Wait for instance to be terminated 
+        waiter = ec2_client.get_waiter('instance_terminated')
+        waiter.wait(
+            InstanceIds=[
+                instanceID,
+            ],
+            WaiterConfig={
+                'Delay': 20,
+                'MaxAttempts': 100
+            }
+        )
+
+        # Delete cluster
+        ecs_client.delete_cluster(cluster=cluster_name)
     except botocore.exceptions.ClientError as e:
         print(e)
     else:
