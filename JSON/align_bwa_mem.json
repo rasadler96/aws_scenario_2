@@ -1,0 +1,57 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_alignment",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "bwa",
+                "mem",
+                "-M",
+                "-t",
+                "4",
+                "-R",
+                "@RG\\tID:1\\tPL:ILLUMINA\\\\tSM:1\\tLB:library\\tPU:platform_unit",
+                "hs37d5.fa",
+                "OMGL_2005265_U035_S35_L001_R1_001.fastq.gz",
+                "OMGL_2005265_U035_S35_L001_R2_001.fastq.gz",
+                "-o",
+                "OMGL_2005265_U035.sam"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/data",
+                    "sourceVolume": "data_alignment"
+                }
+            ],
+            "workingDirectory": "/data",
+            "memory": 14336,
+            "image": "biocontainers/bwa:v0.7.17_cv1",
+            "essential": true,
+            "user": "1000",
+            "privileged": false,
+            "name": "align_bwa_mem"
+        }
+    ],
+    "memory": "14336",
+    "family": "pipeline_alignment",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "3072",
+    "volumes": [
+        {
+            "name": "data_alignment",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}

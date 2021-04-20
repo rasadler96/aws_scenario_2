@@ -1,0 +1,50 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_pull_inputs",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "s3",
+                "sync",
+                "s3://***INPUT_BUCKET_NAME***",
+                "/aws"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/aws",
+                    "sourceVolume": "data_s3"
+                }
+            ],
+            "workingDirectory": "/aws",
+            "memory": 512,
+            "image": "amazon/aws-cli:latest",
+            "essential": true,
+            "user": "1000",
+            "privileged": false,
+            "name": "pull_fastq"
+        }
+    ],
+    "memory": "512",
+    "taskRoleArn": "***ecsS3InputBucketAccess***",
+    "family": "pipeline_pull_inputs",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "1024",
+    "volumes": [
+        {
+            "name": "data_s3",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_sortsam",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "gatk",
+                "--java-options",
+                "-Xmx2g -Djava.io.tmpdir=/tmp",
+                "SortSam",
+                "I=OMGL_2005265_U035.bam",
+                "O=OMGL_2005265_U035sortedbam.bam",
+                "SORT_ORDER=coordinate",
+                "TMP_DIR=/tmp"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/data",
+                    "sourceVolume": "data_sortsam"
+                }
+            ],
+            "workingDirectory": "/data",
+            "memory": 14336,
+            "image": "broadinstitute/gatk:latest",
+            "essential": true,
+            "user": "1000",
+            "name": "sort_sam"
+        }
+    ],
+    "memory": "14336",
+    "family": "pipeline_sort_sam",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "3072",
+    "volumes": [
+        {
+            "name": "data_sortsam",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}

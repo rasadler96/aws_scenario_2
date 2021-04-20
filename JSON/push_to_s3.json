@@ -1,0 +1,61 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_push_outputs",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "s3",
+                "cp",
+                "/aws",
+                "s3://***OUTPUT_BUCKET_NAME***",
+                "--recursive",
+                "--exclude",
+                "*",
+                "--include",
+                "*.bam*",
+                "--include",
+                "*.sam",
+                "--include",
+                "*.vcf*",
+                "--include",
+                "*.log",
+                "--debug"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/aws",
+                    "sourceVolume": "data_push"
+                }
+            ],
+            "workingDirectory": "/aws",
+            "memory": 1024,
+            "image": "amazon/aws-cli:latest",
+            "essential": true,
+            "user": "1000",
+            "name": "push_to_s3"
+        }
+    ],
+    "memory": "1024",
+    "taskRoleArn": "***ecsS3OutputBucketAccess***",
+    "family": "pipeline_push_outputs",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "1024",
+    "volumes": [
+        {
+            "name": "data_push",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}

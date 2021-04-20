@@ -1,0 +1,52 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_mark_duplicates",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "gatk",
+                "--java-options",
+                "-Xmx8g -Djava.io.tmpdir=/tmp",
+                "MarkDuplicates",
+                "I=OMGL_2005265_U035sortedbam.bam",
+                "O=OMGL_2005265_U035dedupbam.bam",
+                "M=picard_metrics.log",
+                "TMP_DIR=/tmp"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/data",
+                    "sourceVolume": "data_duplicates"
+                }
+            ],
+            "workingDirectory": "/data",
+            "memory": 14336,
+            "image": "broadinstitute/gatk:latest",
+            "essential": true,
+            "user": "1000",
+            "name": "mark_duplicates"
+        }
+    ],
+    "memory": "14336",
+    "family": "pipeline_mark_duplicates",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "3072",
+    "volumes": [
+        {
+            "name": "data_duplicates",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}

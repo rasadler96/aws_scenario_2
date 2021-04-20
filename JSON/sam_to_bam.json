@@ -1,0 +1,49 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_sam_to_bam",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "samtools",
+                "view",
+                "-bS",
+                "OMGL_2005265_U035.sam",
+                "-o",
+                "OMGL_2005265_U035.bam"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/data",
+                    "sourceVolume": "data_volume"
+                }
+            ],
+            "memory": 14336,
+            "image": "biocontainers/samtools:v1.9-4-deb_cv1",
+            "essential": true,
+            "user": "1000",
+            "name": "pipeline_sam_to_bam"
+        }
+    ],
+    "memory": "14336",
+    "family": "pipeline_sam_to_bam",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "3072",
+    "volumes": [
+        {
+            "name": "data_volume",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}

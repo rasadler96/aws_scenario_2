@@ -1,0 +1,56 @@
+{
+    "executionRoleArn": "***ecsTaskExecutionRole***",
+    "containerDefinitions": [
+        {
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pipeline_haplotype_caller",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": [
+                "gatk",
+                "HaplotypeCaller",
+                "-A",
+                "Coverage",
+                "-R",
+                "hs37d5.fa",
+                "-I",
+                "OMGL_2005265_U035dedupbam.bam",
+                "-L",
+                "FH.bed",
+                "-O",
+                "OMGL_2005265_U035.vcf"
+            ],
+            "cpu": 0,
+            "mountPoints": [
+                {
+                    "containerPath": "/data",
+                    "sourceVolume": "data_variant_caller"
+                }
+            ],
+            "workingDirectory": "/data",
+            "memory": 14336,
+            "image": "broadinstitute/gatk:latest",
+            "essential": true,
+            "user": "1000",
+            "name": "haplotype_caller"
+        }
+    ],
+    "memory": "14336",
+    "family": "pipeline_variant_caller",
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "3072",
+    "volumes": [
+        {
+            "name": "data_variant_caller",
+            "host": {
+                "sourcePath": "/home/ec2-user"
+            }
+        }
+    ]
+}
