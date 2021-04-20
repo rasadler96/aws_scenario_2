@@ -21,23 +21,41 @@ The FASTQ files to be run should be present in an input bucket within AWS S3.
 
 ### ecs_setup.py
 
-Input: 
+#### Input: 
 - Config file for programmatic access to AWS. 
+
+#### To run: 
+> python ecs_setup.py 
 
 To run tasks on ECS, there are a number of different IAM roles that are required. The main purose of the ecs_setup.py is to set up the required roles for running the pipeline. In addition the script creates a key-pair to access instances within the ECS cluster and creates a security group to control traffic to and from instances in the cluster. 
 
 The following roles are created within the AWS account being used: 
 
 1. ecsInstanceRole : This role allows the container agent on each instance access to the ECS API to be able to communicate with ECS. 
-2. ecsTaskExecutionRole : This role provides access to other AWS service resources that are required to run Amazon ECS tasks. 
+2. ecsTaskExecutionRole : This role provides access to other AWS service resources that are required to run Amazon ECS tasks. (The default AWS policy for this was used to set up CloudWatch Logs)
 3. ecsS3InputBucketAccess : This role provides access to the input bucket for ECS tasks. 
 4. ecsS3OutputBucketAccess : This role provides access to the output bucket for ECS tasks.
 
-Output: 
+#### Output: 
 - The role ARNS, security group ID and keypair name are all then stored within a config file (ecs_config.yml)
 - Keypair for EC2 instance access
 
 ### ecs_run.py 
+
+#### Input: 
+- Config file for programmatic access to AWS. 
+- JSON task definitions that define the tasks to be run. The task definitions used for this project can be seen in /JSON, with the ARNs removed. To use these, simply substitute in the ARNS from the ecs_config.yml created by ecs_setup.py, into the appropriate sections
+- ecs_key.pem : The key to allow instance access for troubleshooting purposes, created by ecs_setup.py
+- ecs_config.yml : This config file, created by ecs_setup.py, contains the relevant keypair name and security group ID needed for running the tasks
+
+#### To run: 
+> python ecs_run.py 
+
+This script registers each of the task definitions within the /JSON folder, creates an ECS cluster and launches an instance into the cluster. Each of the pipeline steps are then run in sequential order (currently hard coded in, so these can be changed as required) and the instance is terminated. The logs from each container run are sent to AWS Cloudwatch if needed for troubleshooting. 
+
+#### Output: 
+- Pipeline output files can be found in the output S3 bucket. 
+- Container logs can be found in Cloudwatch. 
 
 ## Future Work
 
