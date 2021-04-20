@@ -21,12 +21,6 @@ Both an input and output bucket should be created within S3. The FASTQ files to 
 
 ### ecs_setup.py
 
-#### Input: 
-- Config file for programmatic access to AWS. 
-
-#### To run: 
-> python ecs_setup.py 
-
 To run tasks on ECS, there are a number of different IAM roles that are required. The main purose of the ecs_setup.py is to set up the required roles for running the pipeline. In addition the script creates a key-pair to access instances within the ECS cluster and creates a security group to control traffic to and from instances in the cluster. 
 
 The following roles are created within the AWS account being used: 
@@ -36,11 +30,19 @@ The following roles are created within the AWS account being used:
 3. ecsS3InputBucketAccess : This role provides access to the input bucket for ECS tasks. 
 4. ecsS3OutputBucketAccess : This role provides access to the output bucket for ECS tasks.
 
+#### Input: 
+- Config file for programmatic access to AWS. 
+
+#### To run: 
+> python ecs_setup.py 
+
 #### Output: 
 - The role ARNS, security group ID and keypair name are all then stored within a config file (ecs_config.yml)
 - Keypair for EC2 instance access
 
 ### ecs_run.py 
+
+This script registers each of the task definitions within the /JSON folder, creates an ECS cluster and launches an instance into the cluster. Each of the pipeline steps are then run in sequential order (currently hard coded in, so these can be changed as required) and the instance is terminated. The logs from each container run are sent to AWS Cloudwatch if needed for troubleshooting. 
 
 #### Input: 
 - Config file for programmatic access to AWS. 
@@ -50,8 +52,6 @@ The following roles are created within the AWS account being used:
 
 #### To run: 
 > python ecs_run.py 
-
-This script registers each of the task definitions within the /JSON folder, creates an ECS cluster and launches an instance into the cluster. Each of the pipeline steps are then run in sequential order (currently hard coded in, so these can be changed as required) and the instance is terminated. The logs from each container run are sent to AWS Cloudwatch if needed for troubleshooting. 
 
 #### Output: 
 - Pipeline output files can be found in the output S3 bucket. 
