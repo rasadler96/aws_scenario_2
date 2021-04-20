@@ -6,7 +6,7 @@ This code can be used to run ***one*** sample through a simple NGS pipeline crea
 
 AWS programmatic access keys are required. These should be stored within a config file, in the format in the template config file. 
 
-The FASTQ files to be run should be present in an input bucket within AWS S3. 
+Both an input and output bucket should be created within S3. The FASTQ files to be run should be present in an input bucket within AWS S3. 
 
 
 ## Installation
