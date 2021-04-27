@@ -4,10 +4,9 @@ This code can be used to run ***one*** sample through a simple NGS pipeline crea
 
 ## Prerequisites 
 
-AWS programmatic access keys are required. These should be stored within a config file, in the format in the template config file. 
+AWS programmatic access keys are required. These should be stored within a config file, called config.yml, with the same format as the template config file (template_config.txt). 
 
-Both an input and output bucket should be created within S3. The FASTQ files to be run should be present in an input bucket within AWS S3. 
-
+Both an input and output bucket should be created within AWS S3. The FASTQ files to be run should be present in the input bucket prior to running the pipeline tasks. 
 
 ## Installation
 
@@ -37,7 +36,7 @@ The following roles are created within the AWS account being used:
 > python ecs_setup.py 
 
 #### Output: 
-- The role ARNS, security group ID and keypair name are all then stored within a config file (ecs_config.yml)
+- The role ARNs, security group ID and keypair name are all then stored within a config file (ecs_config.yml)
 - Keypair for EC2 instance access
 
 ### ecs_run.py 
@@ -46,7 +45,7 @@ This script registers each of the task definitions within the /JSON folder, crea
 
 #### Input: 
 - Config file for programmatic access to AWS. 
-- JSON task definitions that define the tasks to be run. The task definitions used for this project can be seen in /JSON, with the ARNs removed. To use these, simply substitute in the ARNS from the ecs_config.yml created by ecs_setup.py, into the appropriate sections
+- JSON task definitions that define the tasks to be run. The task definitions used for this project can be seen in /JSON, with the ARNs removed. To use these, simply substitute in the ARNs from the ecs_config.yml created by ecs_setup.py, into the appropriate sections
 - ecs_key.pem : The key to allow instance access for troubleshooting purposes, created by ecs_setup.py
 - ecs_config.yml : This config file, created by ecs_setup.py, contains the relevant keypair name and security group ID needed for running the tasks
 
