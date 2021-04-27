@@ -61,4 +61,4 @@ This script registers each of the task definitions within the /JSON folder, crea
 ### Changes to ecs_run.py 
 
 1. Change instance and cluster provision from manual using Boto3 to IAC using CloudFront or Terraform. 
-2. Allow multiple samples to be run by changing from sequential task running to a containerised pipeline using NextFlow or Cromwell. (Due to this change, the movement of the task registration is not being moved to ecs_setup) 
+2. Allow multiple samples to be run by changing from sequential task running to a containerised pipeline using NextFlow or Cromwell. Task definition registration will then be moved to ecs_setup.py.  
